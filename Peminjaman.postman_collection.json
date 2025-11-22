@@ -1,0 +1,1568 @@
+{
+	"info": {
+		"_postman_id": "3d53a10e-6a5d-498e-813d-32e90a53cb8b",
+		"name": "Peminjaman",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46955326",
+		"_collection_link": "https://avionics-geologist-58586972-818720.postman.co/workspace/Iftikhar-Azhar-Chaudhry's-Works~b5bbd3d2-990e-4c7f-8438-eb8dcaa9e4bb/collection/46955326-3d53a10e-6a5d-498e-813d-32e90a53cb8b?action=share&source=collection_link&creator=46955326"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Peminjam Satu",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "peminjam1@example.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/register",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonData = pm.response.json();\r",
+									"pm.collectionVariables.set(\"token\", jsonData.token);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "email",
+									"value": "peminjam1@example.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/logout",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Role",
+					"item": [
+						{
+							"name": "Get All Role",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/role",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"role"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Role By Id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/role/:id_role",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"role",
+										":id_role"
+									],
+									"variable": [
+										{
+											"key": "id_role",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Role",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"role_name\" : \"kurir\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/role/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"role",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Role",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"role_name\" : \"user\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/role/:id_role/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"role",
+										":id_role",
+										"update"
+									],
+									"variable": [
+										{
+											"key": "id_role",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Role",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/role/:id_role/delete",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"role",
+										":id_role",
+										"delete"
+									],
+									"variable": [
+										{
+											"key": "id_role",
+											"value": "3"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "User",
+					"item": [
+						{
+							"name": "Get All User",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get User By Id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user/:id_user",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										":id_user"
+									],
+									"variable": [
+										{
+											"key": "id_user",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create User",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "Peminjam Satu",
+											"type": "text"
+										},
+										{
+											"key": "email",
+											"value": "peminjam1@example.com",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "password",
+											"type": "text"
+										},
+										{
+											"key": "role_id",
+											"value": "2",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/user/create-user",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"create-user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update User",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Peminjam Satu\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/user/:id_user/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										":id_user",
+										"update"
+									],
+									"variable": [
+										{
+											"key": "id_user",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete User",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user/:id_user/delete",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										":id_user",
+										"delete"
+									],
+									"variable": [
+										{
+											"key": "id_user",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Categories",
+					"item": [
+						{
+							"name": "Get All Catgeories",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/categories",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"categories"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Categories by Id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/categories/:id_categories",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"categories",
+										":id_categories"
+									],
+									"variable": [
+										{
+											"key": "id_categories",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Categories",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"category_name\" : \"Elektronik\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/categories/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"categories",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Categories",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"category_name\" : \"Laptop\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/categories/:id_category/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"categories",
+										":id_category",
+										"update"
+									],
+									"variable": [
+										{
+											"key": "id_category",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Categories",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/categories/:id_category/delete",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"categories",
+										":id_category",
+										"delete"
+									],
+									"variable": [
+										{
+											"key": "id_category",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Class",
+					"item": [
+						{
+							"name": "Get All Class",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/class",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"class"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Class by Id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/class/:id_class",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"class",
+										":id_class"
+									],
+									"variable": [
+										{
+											"key": "id_class",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Class",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"class_name\" : \"X\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/class/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"class",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Class",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"class_name\" : \"X\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/class/:id_class/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"class",
+										":id_class",
+										"update"
+									],
+									"variable": [
+										{
+											"key": "id_class",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Class",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/class/:id_class/delete",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"class",
+										":id_class",
+										"delete"
+									],
+									"variable": [
+										{
+											"key": "id_class",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Location",
+					"item": [
+						{
+							"name": "Get All Location",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/location",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"location"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Location by Id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/location/:id_location",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"location",
+										":id_location"
+									],
+									"variable": [
+										{
+											"key": "id_location",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Location",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"location_name\" : \"Lab 1\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/location/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"location",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Location",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"location_name\" : \"Sigma\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/location/:id_location/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"location",
+										":id_location",
+										"update"
+									],
+									"variable": [
+										{
+											"key": "id_location",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Location",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/location/:id_location/delete",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"location",
+										":id_location",
+										"delete"
+									],
+									"variable": [
+										{
+											"key": "id_location",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Jurusan",
+					"item": [
+						{
+							"name": "Get All Major",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/major",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"major"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Major by Id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/major/:id_major",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"major",
+										":id_major"
+									],
+									"variable": [
+										{
+											"key": "id_major",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Major",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"major_name\" : \"RPL 1\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/major/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"major",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Major",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"major_name\" : \"RPL 2\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/major/:id_major/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"major",
+										":id_major",
+										"update"
+									],
+									"variable": [
+										{
+											"key": "id_major",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Major",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/major/:id_major/delete",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"major",
+										":id_major",
+										"delete"
+									],
+									"variable": [
+										{
+											"key": "id_major",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Status Peminjam",
+					"item": [
+						{
+							"name": "Get All Status",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/status",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"status"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Status by Id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/status/:id_status",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"status",
+										":id_status"
+									],
+									"variable": [
+										{
+											"key": "id_status",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Status",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"status_name\" : \"siswa\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/status/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"status",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Major",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"status_name\" : \"guru\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/status/:id_status/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"status",
+										":id_status",
+										"update"
+									],
+									"variable": [
+										{
+											"key": "id_status",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Status",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/status/:id_status/delete",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"status",
+										":id_status",
+										"delete"
+									],
+									"variable": [
+										{
+											"key": "id_status",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Product",
+					"item": [
+						{
+							"name": "Get All Product",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/product",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"product"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Product by Id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/product/:id_product",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"product",
+										":id_product"
+									],
+									"variable": [
+										{
+											"key": "id_product",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Product",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"product_name\" : \"Laptop\",\r\n    \"category_id\" : 1,\r\n    \"qty\" : 10\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/product/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"product",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Product",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"qty\" : 5\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/product/:id_product/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"product",
+										":id_product",
+										"update"
+									],
+									"variable": [
+										{
+											"key": "id_product",
+											"value": "4"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Product",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/product/:id_product/delete",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"product",
+										":id_product",
+										"delete"
+									],
+									"variable": [
+										{
+											"key": "id_product",
+											"value": "4"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Me",
+					"item": [
+						{
+							"name": "Get Biodata (Me)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/admin",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"admin"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Profile (Me)",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\" : \"peminjam1@example.com\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/admin/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"admin",
+										"update"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Major",
+					"item": [
+						{
+							"name": "Get All Major",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/major",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"major"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Major by Id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/major/:id_major",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"major",
+										":id_major"
+									],
+									"variable": [
+										{
+											"key": "id_major",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Major",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"major_name\" : \"RPL 1\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/major/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"major",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Major",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"major_name\" : \"RPL 2\"\r\n}"
+								},
+								"url": {
+									"raw": "{{host}}/major/:id_major/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"major",
+										":id_major",
+										"update"
+									],
+									"variable": [
+										{
+											"key": "id_major",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Major",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/major/:id_major/delete",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"major",
+										":id_major",
+										"delete"
+									],
+									"variable": [
+										{
+											"key": "id_major",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Me",
+					"item": [
+						{
+							"name": "Get Biodata (Me)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/me",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"me"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Profile (Me)",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"identity_number\" : \"12345678910\",\r\n    \"phone\" : \"1212121212\",\r\n    \"status_id\" : 1,\r\n    \"class_id\" : 1,\r\n    \"major_id\" : 1\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/me/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"me",
+										"update"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Peminjaman",
+			"item": [
+				{
+					"name": "Get Peminjaman by Id (Me)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/peminjaman/me",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"peminjaman",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Peminjaman by Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/peminjaman/active",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"peminjaman",
+								"active"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Peminjaman",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product_id\": 1,\r\n    \"location_id\": 1,\r\n    \"start_date\": \"2025-11-20\",\r\n    \"end_date\": \"2025-11-25\",\r\n    \"qty\": 1,\r\n    \"pin_code\": \"1234\",\r\n    \"note\": \"Pinjam untuk ujian\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/peminjaman/create",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"peminjaman",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Kembalikan Pinjaman",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/peminjaman/:id_pinjam/return",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"peminjaman",
+								":id_pinjam",
+								"return"
+							],
+							"variable": [
+								{
+									"key": "id_pinjam",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Peminjaman",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": ""
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	]
+}
