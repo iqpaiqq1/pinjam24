@@ -1,9 +1,47 @@
 // lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
+import '../service/api_service.dart';
 import 'login_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  Map<String, dynamic>? _userData;
+  bool _isLoading = true;
+  bool _isLoggingOut = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final response = await ApiService.getMyDetail();
+
+      if (mounted) {
+        setState(() {
+          _userData = response['data'] ?? response;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data: $e')),
+        );
+      }
+    }
+  }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
@@ -23,34 +61,26 @@ class ProfileScreen extends StatelessWidget {
           content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Tutup dialog
-              },
+              onPressed:
+                  _isLoggingOut ? null : () => Navigator.of(context).pop(),
               child: Text('Batal', style: TextStyle(color: Colors.grey[700])),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Tutup dialog
-
-                // Navigate to Login Screen and remove all previous routes
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (route) => false,
-                );
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Anda telah berhasil logout'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
+              onPressed: _isLoggingOut ? null : _performLogout,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red[700],
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Logout'),
+              child: _isLoggingOut
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Logout'),
             ),
           ],
         );
@@ -58,14 +88,72 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _performLogout() async {
+    setState(() {
+      _isLoggingOut = true;
+    });
+
+    try {
+      final response = await ApiService.logout();
+
+      if (mounted) {
+        // Navigate to Login Screen and remove all previous routes
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Logout berhasil'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoggingOut = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Logout gagal: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        Navigator.of(context).pop(); // Tutup dialog
+      }
+    }
+  }
+
+  // Helper method untuk get data dengan fallback
+  String _getUserData(String key) {
+    if (_userData == null) return '-';
+    return _userData![key]?.toString() ?? '-';
+  }
+
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
+
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Profil Pengguna')),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profil Pengguna'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadUserData,
+          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
@@ -116,9 +204,9 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Name
-                  const Text(
-                    'Peminjam Satu',
-                    style: TextStyle(
+                  Text(
+                    _getUserData('name'),
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -136,9 +224,9 @@ class ProfileScreen extends StatelessWidget {
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      'NIM: 12345678',
-                      style: TextStyle(
+                    child: Text(
+                      'NIM: ${_getUserData('nim')}',
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Colors.white,
                         fontWeight: FontWeight.w500,
@@ -165,7 +253,7 @@ class ProfileScreen extends StatelessWidget {
                   _buildInfoCard(
                     icon: Icons.email_outlined,
                     title: 'Email',
-                    subtitle: 'peminjam1@example.com',
+                    subtitle: _getUserData('email'),
                     color: Colors.blue,
                   ),
                   const SizedBox(height: 12),
@@ -174,7 +262,9 @@ class ProfileScreen extends StatelessWidget {
                   _buildInfoCard(
                     icon: Icons.school_outlined,
                     title: 'Kelas',
-                    subtitle: 'X RPL 1',
+                    subtitle: _getUserData('class_name') ??
+                        _getUserData('class') ??
+                        '-',
                     color: Colors.green,
                   ),
                   const SizedBox(height: 12),
@@ -183,21 +273,25 @@ class ProfileScreen extends StatelessWidget {
                   _buildInfoCard(
                     icon: Icons.menu_book_outlined,
                     title: 'Jurusan',
-                    subtitle: 'Rekayasa Perangkat Lunak',
+                    subtitle: _getUserData('major_name') ??
+                        _getUserData('major') ??
+                        '-',
                     color: Colors.orange,
                   ),
                   const SizedBox(height: 12),
 
-                  // Phone
+                  // Phone (jika ada di API)
                   _buildInfoCard(
                     icon: Icons.phone_outlined,
                     title: 'No. Telepon',
-                    subtitle: '08123456789',
+                    subtitle: _getUserData('phone') ??
+                        _getUserData('phone_number') ??
+                        '-',
                     color: Colors.purple,
                   ),
                   const SizedBox(height: 32),
 
-                  // Menu Options
+                  // Menu Options (tetap sama)
                   const Text(
                     'Menu',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -296,6 +390,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // _buildInfoCard dan _buildMenuTile methods tetap sama...
   Widget _buildInfoCard({
     required IconData icon,
     required String title,
