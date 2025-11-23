@@ -1,9 +1,7 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
-import '../data/dummy_data.dart';
-import '../models/product.dart';
+import '../service/api_service.dart';
 import 'loan_form_screen.dart';
-import '../service/api_service.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,21 +13,94 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
   String _selectedCategory = 'Semua';
+  List<dynamic> _products = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
 
-  List<Product> get filteredProducts {
-    return dummyProducts.where((product) {
-      final matchesSearch = product.name.toLowerCase().contains(
-            _searchQuery.toLowerCase(),
-          );
-      final matchesCategory = _selectedCategory == 'Semua' ||
-          product.categoryName == _selectedCategory;
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final response = await ApiService.getProducts();
+
+      if (mounted) {
+        if (response['success'] == true) {
+          setState(() {
+            _products = response['data'] ?? [];
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _errorMessage = response['message'] ?? 'Gagal memuat produk';
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Terjadi kesalahan: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  List<dynamic> get filteredProducts {
+    return _products.where((product) {
+      final productName = product['product_name']?.toString().toLowerCase() ??
+          product['name']?.toString().toLowerCase() ??
+          '';
+      final categoryName = product['category']?['category_name']?.toString() ??
+          product['category_name']?.toString() ??
+          '';
+
+      final matchesSearch = productName.contains(_searchQuery.toLowerCase());
+      final matchesCategory =
+          _selectedCategory == 'Semua' || categoryName == _selectedCategory;
       return matchesSearch && matchesCategory;
     }).toList();
   }
 
   List<String> get categories {
-    final cats = dummyProducts.map((p) => p.categoryName).toSet().toList();
+    final cats = _products
+        .map((product) {
+          return product['category']?['category_name']?.toString() ??
+              product['category_name']?.toString() ??
+              'Lainnya';
+        })
+        .toSet()
+        .toList();
+
     return ['Semua', ...cats];
+  }
+
+  String _getProductName(dynamic product) {
+    return product['product_name'] ?? product['name'] ?? 'Unknown Product';
+  }
+
+  String _getCategoryName(dynamic product) {
+    return product['category']?['category_name'] ??
+        product['category_name'] ??
+        'Lainnya';
+  }
+
+  String _getDescription(dynamic product) {
+    return product['description'] ??
+        product['product_description'] ??
+        'Tidak ada deskripsi';
+  }
+
+  int _getQuantity(dynamic product) {
+    return product['qty'] ?? product['quantity'] ?? 0;
+  }
+
+  bool _isProductAvailable(dynamic product) {
+    return _getQuantity(product) > 0;
   }
 
   @override
@@ -38,6 +109,10 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Daftar Barang'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _isLoading ? null : _loadProducts,
+          ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
@@ -48,141 +123,205 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Search Bar & Filter
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Theme.of(context).primaryColor.withOpacity(0.05),
-            child: Column(
-              children: [
-                // Search Field
-                TextField(
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Cari barang...',
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage.isNotEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _errorMessage,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadProducts,
+                        child: const Text('Coba Lagi'),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 12),
-
-                // Category Filter
-                SizedBox(
-                  height: 40,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      final category = categories[index];
-                      final isSelected = _selectedCategory == category;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(category),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              _selectedCategory = category;
-                            });
-                          },
-                          backgroundColor: Colors.white,
-                          selectedColor: Theme.of(
-                            context,
-                          ).primaryColor.withOpacity(0.2),
-                          labelStyle: TextStyle(
-                            color: isSelected
-                                ? Theme.of(context).primaryColor
-                                : Colors.grey[700],
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                )
+              : Column(
+                  children: [
+                    // Search Bar & Filter
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      color: Theme.of(context).primaryColor.withOpacity(0.05),
+                      child: Column(
+                        children: [
+                          // Search Field
+                          TextField(
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Cari barang...',
+                              prefixIcon: const Icon(Icons.search),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
+                          const SizedBox(height: 12),
 
-          // Products List
-          Expanded(
-            child: filteredProducts.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.inventory_2_outlined,
-                          size: 64,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Tidak ada barang ditemukan',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
+                          // Category Filter
+                          SizedBox(
+                            height: 40,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: categories.length,
+                              itemBuilder: (context, index) {
+                                final category = categories[index];
+                                final isSelected =
+                                    _selectedCategory == category;
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: FilterChip(
+                                    label: Text(category),
+                                    selected: isSelected,
+                                    onSelected: (selected) {
+                                      setState(() {
+                                        _selectedCategory = category;
+                                      });
+                                    },
+                                    backgroundColor: Colors.white,
+                                    selectedColor: Theme.of(
+                                      context,
+                                    ).primaryColor.withOpacity(0.2),
+                                    labelStyle: TextStyle(
+                                      color: isSelected
+                                          ? Theme.of(context).primaryColor
+                                          : Colors.grey[700],
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(12.0),
-                    itemCount: filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = filteredProducts[index];
-                      return ProductCard(product: product);
-                    },
-                  ),
-          ),
-        ],
-      ),
+
+                    // Products List
+                    Expanded(
+                      child: filteredProducts.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.inventory_2_outlined,
+                                    size: 64,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Tidak ada barang ditemukan',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : RefreshIndicator(
+                              onRefresh: _loadProducts,
+                              child: ListView.builder(
+                                padding: const EdgeInsets.all(12.0),
+                                itemCount: filteredProducts.length,
+                                itemBuilder: (context, index) {
+                                  final product = filteredProducts[index];
+                                  return ProductCard(
+                                    product: product,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              LoanFormScreen(product: product),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
     );
   }
 }
 
 class ProductCard extends StatelessWidget {
-  final Product product;
+  final dynamic product;
+  final VoidCallback onTap;
 
-  const ProductCard({super.key, required this.product});
+  const ProductCard({
+    super.key,
+    required this.product,
+    required this.onTap,
+  });
+
+  String _getProductName(dynamic product) {
+    return product['product_name'] ?? product['name'] ?? 'Unknown Product';
+  }
+
+  String _getCategoryName(dynamic product) {
+    return product['category']?['category_name'] ??
+        product['category_name'] ??
+        'Lainnya';
+  }
+
+  String _getDescription(dynamic product) {
+    return product['description'] ??
+        product['product_description'] ??
+        'Tidak ada deskripsi';
+  }
+
+  int _getQuantity(dynamic product) {
+    return product['qty'] ?? product['quantity'] ?? 0;
+  }
+
+  bool _isProductAvailable(dynamic product) {
+    return _getQuantity(product) > 0;
+  }
 
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    final isAvailable = product.quantity > 0;
+    final isAvailable = _isProductAvailable(product);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12.0),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: isAvailable
-            ? () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LoanFormScreen(product: product),
-                  ),
-                );
-              }
-            : null,
+        onTap: isAvailable ? onTap : null,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -209,7 +348,7 @@ class ProductCard extends StatelessWidget {
                   children: <Widget>[
                     // Product Name
                     Text(
-                      product.name,
+                      _getProductName(product),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -229,7 +368,7 @@ class ProductCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        product.categoryName,
+                        _getCategoryName(product),
                         style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                       ),
                     ),
@@ -237,7 +376,7 @@ class ProductCard extends StatelessWidget {
 
                     // Description
                     Text(
-                      product.description,
+                      _getDescription(product),
                       style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -258,7 +397,7 @@ class ProductCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'Stok: ${product.quantity}',
+                              'Stok: ${_getQuantity(product)}',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: isAvailable ? Colors.green : Colors.red,
@@ -269,17 +408,7 @@ class ProductCard extends StatelessWidget {
 
                         // Borrow Button
                         ElevatedButton.icon(
-                          onPressed: isAvailable
-                              ? () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          LoanFormScreen(product: product),
-                                    ),
-                                  );
-                                }
-                              : null,
+                          onPressed: isAvailable ? onTap : null,
                           icon:
                               const Icon(Icons.check_circle_outline, size: 16),
                           label: const Text('Pinjam'),
