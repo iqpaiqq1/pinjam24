@@ -20,11 +20,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    print('🏠 HomeScreen initState');
+    print('🔑 Current token: ${ApiService.token}');
     _loadProducts();
   }
 
   Future<void> _loadProducts() async {
     try {
+      print('📦 Attempting to load products...');
+      print('🔑 Token before API call: ${ApiService.token}');
       final response = await ApiService.getProducts();
 
       if (mounted) {
@@ -97,10 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int _getQuantity(dynamic product) {
     return product['qty'] ?? product['quantity'] ?? 0;
-  }
-
-  bool _isProductAvailable(dynamic product) {
-    return _getQuantity(product) > 0;
   }
 
   @override
@@ -257,14 +257,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                   final product = filteredProducts[index];
                                   return ProductCard(
                                     product: product,
-                                    onTap: () {
-                                      Navigator.push(
+                                    onTap: () async {
+                                      // ✅ Cek stok untuk menentukan mode take over
+                                      final qty = _getQuantity(product);
+                                      final isTakeOver = qty == 0;
+
+                                      // Navigate ke form dengan parameter isTakeOver
+                                      final result = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) =>
-                                              LoanFormScreen(product: product),
+                                          builder: (context) => LoanFormScreen(
+                                            product: product,
+                                            isTakeOver: isTakeOver,
+                                          ),
                                         ),
                                       );
+
+                                      // Refresh products jika berhasil
+                                      if (result == true) {
+                                        _loadProducts();
+                                      }
                                     },
                                   );
                                 },
@@ -277,6 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+// ✅ UPDATED: ProductCard - Tombol Pinjam SELALU aktif
 class ProductCard extends StatelessWidget {
   final dynamic product;
   final VoidCallback onTap;
@@ -307,21 +320,18 @@ class ProductCard extends StatelessWidget {
     return product['qty'] ?? product['quantity'] ?? 0;
   }
 
-  bool _isProductAvailable(dynamic product) {
-    return _getQuantity(product) > 0;
-  }
-
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
-    final isAvailable = _isProductAvailable(product);
+    final qty = _getQuantity(product);
+    final isOutOfStock = qty == 0;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12.0),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: isAvailable ? onTap : null,
+        onTap: onTap, // ✅ SELALU bisa diklik
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -393,28 +403,32 @@ class ProductCard extends StatelessWidget {
                             Icon(
                               Icons.inventory_outlined,
                               size: 16,
-                              color: isAvailable ? Colors.green : Colors.red,
+                              color: isOutOfStock ? Colors.red : Colors.green,
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'Stok: ${_getQuantity(product)}',
+                              'Stok: $qty',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: isAvailable ? Colors.green : Colors.red,
+                                color: isOutOfStock ? Colors.red : Colors.green,
                               ),
                             ),
                           ],
                         ),
 
-                        // Borrow Button
+                        // ✅ Borrow Button - SELALU aktif
                         ElevatedButton.icon(
-                          onPressed: isAvailable ? onTap : null,
-                          icon:
-                              const Icon(Icons.check_circle_outline, size: 16),
-                          label: const Text('Pinjam'),
+                          onPressed: onTap, // Tidak ada kondisi disable
+                          icon: Icon(
+                            isOutOfStock
+                                ? Icons.swap_horiz
+                                : Icons.check_circle_outline,
+                            size: 16,
+                          ),
+                          label: Text(isOutOfStock ? 'Take Over' : 'Pinjam'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
-                                isAvailable ? Colors.green : Colors.grey,
+                                isOutOfStock ? Colors.orange : Colors.green,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,

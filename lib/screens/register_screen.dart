@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../service/api_service.dart'; // Import ApiService
 import 'login_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -30,57 +32,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    // Validasi form terlebih dahulu
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-      try {
-        // PAKE ApiService.register
-        final response = await ApiService.register(
-          name: _nameController.text.trim(),
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+    if (_nameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.orange,
+          content: Text("Semua field harus diisi!"),
+        ),
+      );
+      return;
+    }
 
-        if (!mounted) return;
+    setState(() => _isLoading = true);
 
-        setState(() {
-          _isLoading = false;
-        });
+    // MENGGANTI: Gunakan ApiService untuk register
+    final result = await ApiService.register(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
 
-        if (response['success'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.green,
-              content: Text(response['message']),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+    // ⛔ CEK DULU
+    if (!mounted) return;
 
-          // Redirect ke login screen setelah registrasi berhasil
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-          );
-        } else {
-          throw Exception(response['message'] ?? 'Registrasi gagal');
-        }
-      } catch (e) {
-        if (!mounted) return;
+    setState(() => _isLoading = false);
 
-        setState(() {
-          _isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.red,
-            content: Text(e.toString()),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.green,
+          content: Text(result["message"] ?? "Pendaftaran berhasil!"),
+        ),
+      );
+      // Pendaftaran berhasil, kembali ke halaman Login
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(result["message"] ?? "Gagal melakukan pendaftaran."),
+        ),
+      );
     }
   }
 

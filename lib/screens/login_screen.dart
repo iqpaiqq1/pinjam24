@@ -20,8 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Pastikan baseUrl di ApiService sesuai dengan IP backend lo
-     ApiService.baseUrl = "http://192.168.1.7:8000/api";
   }
 
   @override
@@ -51,6 +49,12 @@ class _LoginScreenState extends State<LoginScreen> {
         });
 
         if (response['success'] == true) {
+          // ✅ SIMPAN TOKEN KE ApiService
+          if (response['token'] != null) {
+            ApiService.token = response['token'];
+            print('✅ Token tersimpan: ${response['token']}');
+          }
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
