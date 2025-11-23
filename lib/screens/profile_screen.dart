@@ -1,6 +1,6 @@
 // lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
-import '../service/api_service.dart';
+import '../service/api_service.dart'; // Pastikan path sesuai
 import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -23,11 +23,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserData() async {
     try {
-      final response = await ApiService.getMyDetail();
+      // GUNAKAN METHOD YANG ADA DI ApiService
+      final response = await ApiService.getUserDetailProfile();
 
       if (mounted) {
         setState(() {
-          _userData = response['data'] ?? response;
+          // Sesuaikan dengan struktur response dari ApiService
+          _userData = response['data'] ?? {};
           _isLoading = false;
         });
       }
@@ -37,7 +39,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat data: $e')),
+          SnackBar(
+            content: Text('Gagal memuat data: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -127,10 +132,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Helper method untuk get data dengan fallback
+  // Helper method untuk get data dengan fallback - DIUBAH UNTUK MATCH API SERVICE
   String _getUserData(String key) {
     if (_userData == null) return '-';
-    return _userData![key]?.toString() ?? '-';
+
+    // Mapping field names berdasarkan response dari ApiService
+    switch (key) {
+      case 'name':
+        return _userData!['user_name'] ?? _userData!['name'] ?? '-';
+      case 'email':
+        return _userData!['email'] ?? '-';
+      case 'nim':
+        return _userData!['identity_number'] ?? _userData!['nim'] ?? '-';
+      case 'phone':
+        return _userData!['phone'] ?? _userData!['phone_number'] ?? '-';
+      case 'class':
+        return _userData!['class'] ?? _userData!['class_name'] ?? '-';
+      case 'major':
+        return _userData!['major'] ?? _userData!['major_name'] ?? '-';
+      case 'role':
+        return _userData!['role'] ?? '-';
+      case 'status':
+        return _userData!['status'] ?? _userData!['status_name'] ?? '-';
+      default:
+        return _userData![key]?.toString() ?? '-';
+    }
   }
 
   @override
@@ -214,7 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 4),
 
-                  // NIM
+                  // Role
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -225,7 +251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      'NIM: ${_getUserData('nim')}',
+                      'Role: ${_getUserData('role')}',
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.white,
@@ -258,14 +284,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 12),
 
+                  // NIM / Identity Number
+                  _buildInfoCard(
+                    icon: Icons.badge_outlined,
+                    title: 'NIM / Identity Number',
+                    subtitle: _getUserData('nim'),
+                    color: Colors.green,
+                  ),
+                  const SizedBox(height: 12),
+
                   // Kelas
                   _buildInfoCard(
                     icon: Icons.school_outlined,
                     title: 'Kelas',
-                    subtitle: _getUserData('class_name') ??
-                        _getUserData('class') ??
-                        '-',
-                    color: Colors.green,
+                    subtitle: _getUserData('class'),
+                    color: Colors.orange,
                   ),
                   const SizedBox(height: 12),
 
@@ -273,25 +306,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildInfoCard(
                     icon: Icons.menu_book_outlined,
                     title: 'Jurusan',
-                    subtitle: _getUserData('major_name') ??
-                        _getUserData('major') ??
-                        '-',
-                    color: Colors.orange,
+                    subtitle: _getUserData('major'),
+                    color: Colors.purple,
                   ),
                   const SizedBox(height: 12),
 
-                  // Phone (jika ada di API)
+                  // Status
+                  _buildInfoCard(
+                    icon: Icons.verified_user_outlined,
+                    title: 'Status',
+                    subtitle: _getUserData('status'),
+                    color: Colors.teal,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Phone
                   _buildInfoCard(
                     icon: Icons.phone_outlined,
                     title: 'No. Telepon',
-                    subtitle: _getUserData('phone') ??
-                        _getUserData('phone_number') ??
-                        '-',
-                    color: Colors.purple,
+                    subtitle: _getUserData('phone'),
+                    color: Colors.red,
                   ),
                   const SizedBox(height: 32),
 
-                  // Menu Options (tetap sama)
+                  // Menu Options
                   const Text(
                     'Menu',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -390,7 +428,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // _buildInfoCard dan _buildMenuTile methods tetap sama...
   Widget _buildInfoCard({
     required IconData icon,
     required String title,

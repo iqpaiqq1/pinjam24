@@ -460,28 +460,33 @@ Widget build(BuildContext context) {
             const SizedBox(height: 16),
 
             // --- 3. PIN Code ---
-            TextFormField(
-              decoration: const InputDecoration(
-                labelText: 'PIN Code',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
-                hintText: 'Masukkan PIN untuk keamanan',
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              ),
-              obscureText: true,
-              enabled: !_isLoading, // DISABLE field ketika loading
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'PIN wajib diisi';
-                }
-                if (value.length < 4) {
-                  return 'PIN minimal 4 karakter';
-                }
-                return null;
-              },
-              onSaved: (value) => _pinCode = value!,
-            ),
-            const SizedBox(height: 16),
+            
+TextFormField(
+  decoration: const InputDecoration(
+    labelText: 'PIN Code',
+    border: OutlineInputBorder(),
+    prefixIcon: Icon(Icons.lock),
+    hintText: 'Masukkan PIN untuk keamanan',
+    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+  ),
+  obscureText: true,
+  enabled: !_isLoading,
+  onChanged: (value) {  // TAMBAHKAN INI
+    setState(() {
+      _pinCode = value;
+    });
+  },
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'PIN wajib diisi';
+    }
+    if (value.length < 4) {
+      return 'PIN minimal 4 karakter';
+    }
+    return null;
+  },
+  onSaved: (value) => _pinCode = value!,
+),
 
             // --- 4. Dropdown Lokasi ---
             DropdownButtonFormField<Location>(

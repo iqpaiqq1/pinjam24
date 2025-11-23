@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../service/api_service.dart'; // Import ApiService
 import 'register_screen.dart';
 import 'main_navigation.dart';
 
@@ -18,23 +17,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
 
-  // Fungsi login langsung tanpa ApiService
-  Future<Map<String, dynamic>> _loginDirect(
-      String email, String password) async {
-    const String baseUrl = "http://192.168.1.7:8000/api";
-
-    final response = await http.post(
-      Uri.parse("$baseUrl/login"),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "email": email,
-        "password": password,
-      }),
-    );
-
-    return json.decode(response.body);
+  @override
+  void initState() {
+    super.initState();
+    // Pastikan baseUrl di ApiService sesuai dengan IP backend lo
+     ApiService.baseUrl = "http://192.168.1.7:8000/api";
   }
 
   @override
@@ -51,9 +38,10 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        final response = await _loginDirect(
-          _emailController.text.trim(),
-          _passwordController.text.trim(),
+        // LANGSUNG PAKE ApiService.login
+        final response = await ApiService.login(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
 
         if (!mounted) return;
@@ -62,11 +50,11 @@ class _LoginScreenState extends State<LoginScreen> {
           _isLoading = false;
         });
 
-        if (response['token'] != null) {
+        if (response['success'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Login berhasil, selamat datang ${response['user']?['name'] ?? 'User'}!',
+                '${response['message']}, selamat datang ${response['user']?['name'] ?? 'User'}!',
               ),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
