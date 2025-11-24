@@ -32,10 +32,15 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
   bool _isLoading = false;
   bool _isLoadingLocations = true;
 
-  // ✅ Data untuk take over
+  // Data untuk take over
   int _totalBorrowed = 0;
   bool _isLoadingBorrowedInfo = false;
-  List<dynamic> _activeLoans = []; // Simpan list peminjaman aktif
+  List<dynamic> _activeLoans = [];
+
+  // WARNA SAMA PERSIS DENGAN HOMESCREEN
+  final Color primaryBlue = const Color(0xFF1565C0);
+  final Color darkBlue = const Color(0xFF0D47A1);
+  final Color accentBlue = const Color(0xFF42A5F5);
 
   @override
   void initState() {
@@ -56,7 +61,7 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
     super.dispose();
   }
 
-  // ✅ Load total yang sedang dipinjam + simpan list loans
+  // Load total yang sedang dipinjam + simpan list loans
   Future<void> _loadBorrowedInfo() async {
     setState(() {
       _isLoadingBorrowedInfo = true;
@@ -65,40 +70,37 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
     try {
       final productId = _getProductId();
 
-      // Get all active loans
       final response = await ApiService.getActivePeminjaman();
 
       if (mounted && response['success'] == true) {
         final List<dynamic> allLoans = response['data'] ?? [];
 
-        // Filter by product_id dan status dipinjam
         final productLoans = allLoans.where((loan) {
           final loanProductId = loan['product_id'] ?? loan['product']?['id'];
           final status = loan['status']?.toString().toLowerCase();
           return loanProductId == productId && status == 'dipinjam';
         }).toList();
 
-        // Sum total borrowed
         int totalBorrowed = 0;
         for (var loan in productLoans) {
           totalBorrowed += (loan['qty'] ?? 0) as int;
         }
 
         setState(() {
-          _activeLoans = productLoans; // Simpan list untuk cek PIN nanti
+          _activeLoans = productLoans;
           _totalBorrowed = totalBorrowed;
           _isLoadingBorrowedInfo = false;
         });
 
         print(
-            '📊 Total borrowed: $_totalBorrowed from ${productLoans.length} loans');
+            'Total borrowed: $_totalBorrowed from ${productLoans.length} loans');
       } else {
         setState(() {
           _isLoadingBorrowedInfo = false;
         });
       }
     } catch (e) {
-      print('❌ Error loading borrowed info: $e');
+      print('Error loading borrowed info: $e');
       if (mounted) {
         setState(() {
           _isLoadingBorrowedInfo = false;
@@ -107,10 +109,8 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
     }
   }
 
-  // ✅ FUNGSI BARU: Cari ID peminjaman berdasarkan PIN
   int? _findLoanIdByPin(String pin) {
     try {
-      // Cari peminjaman yang PIN-nya cocok
       final matchedLoan = _activeLoans.firstWhere(
         (loan) => loan['pin_code']?.toString() == pin,
         orElse: () => null,
@@ -119,19 +119,18 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
       if (matchedLoan != null) {
         final loanId = matchedLoan['id'];
         final loanQty = matchedLoan['qty'] ?? 0;
-        print('✅ Found loan ID: $loanId with qty: $loanQty for PIN: $pin');
+        print('Found loan ID: $loanId with qty: $loanQty for PIN: $pin');
         return loanId;
       } else {
-        print('❌ No loan found with PIN: $pin');
+        print('No loan found with PIN: $pin');
         return null;
       }
     } catch (e) {
-      print('❌ Error finding loan by PIN: $e');
+      print('Error finding loan by PIN: $e');
       return null;
     }
   }
 
-  // ✅ FUNGSI BARU: Validasi quantity vs loan yang akan di-take over
   String? _validateTakeOverQuantity(String pin, int requestedQty) {
     try {
       final matchedLoan = _activeLoans.firstWhere(
@@ -289,10 +288,8 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
       return;
     }
 
-    // ✅ VALIDASI TAMBAHAN: Cek PIN dan qty untuk take over
     int? idPinjam;
     if (widget.isTakeOver) {
-      // Cari ID peminjaman berdasarkan PIN
       idPinjam = _findLoanIdByPin(_borrowPinController.text);
 
       if (idPinjam == null) {
@@ -302,7 +299,6 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
         return;
       }
 
-      // Validasi quantity
       final qtyValidation = _validateTakeOverQuantity(
         _borrowPinController.text,
         _quantity,
@@ -313,7 +309,7 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
         return;
       }
 
-      print('✅ Take over validated: loan_id=$idPinjam, qty=$_quantity');
+      print('Take over validated: loan_id=$idPinjam, qty=$_quantity');
     }
 
     setState(() {
@@ -329,7 +325,7 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
         pinCode: _pinController.text,
         qty: _quantity,
         note: _noteController.text.isNotEmpty ? _noteController.text : null,
-        idPinjam: idPinjam, // ✅ Kirim ID peminjaman yang akan di-take over
+        idPinjam: idPinjam,
         overridePin: widget.isTakeOver ? _borrowPinController.text : null,
       );
 
@@ -342,7 +338,7 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
           _showSuccessSnackBar(
             '${widget.isTakeOver ? "Take over" : "Peminjaman"} ${_getProductName()} berhasil!\n'
             'PIN Anda: ${_pinController.text}\n'
-            '⚠️ CATAT PIN INI UNTUK PENGEMBALIAN!',
+            'CATAT PIN INI UNTUK PENGEMBALIAN!',
           );
 
           Navigator.of(context).pop(true);
@@ -362,50 +358,51 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
-
     if (_isLoadingLocations || (_isLoadingBorrowedInfo && widget.isTakeOver)) {
       return Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
           title: Text(
             widget.isTakeOver
                 ? 'Ambil Alih: ${_getProductName()}'
                 : 'Pinjam: ${_getProductName()}',
           ),
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(color: accentBlue),
+        ),
       );
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         title: Text(
           widget.isTakeOver
               ? 'Ambil Alih: ${_getProductName()}'
               : 'Pinjam: ${_getProductName()}',
         ),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildProductInfoCard(primaryColor),
+              _buildProductInfoCard(),
               const SizedBox(height: 24),
               if (widget.isTakeOver) ...[
                 _buildTakeOverWarningCard(),
                 const SizedBox(height: 24),
               ],
-              _buildPinSection(primaryColor),
+              _buildPinSection(),
               const SizedBox(height: 20),
               if (widget.isTakeOver) ...[
-                _buildBorrowPinSection(primaryColor),
+                _buildBorrowPinSection(),
                 const SizedBox(height: 20),
               ],
               _buildLocationDropdown(),
@@ -416,7 +413,7 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
               const SizedBox(height: 20),
               _buildNoteField(),
               const SizedBox(height: 30),
-              _buildSubmitButton(primaryColor),
+              _buildSubmitButton(),
             ],
           ),
         ),
@@ -424,192 +421,170 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
     );
   }
 
-  Widget _buildProductInfoCard(Color primaryColor) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+  // ==================== UI DENGAN TEMA HOMESCREEN ====================
+
+  Widget _buildProductInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: widget.isTakeOver ? Colors.orange[600] : primaryBlue,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.inventory_2_rounded, color: Colors.white, size: 32),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.inventory_2, color: primaryColor, size: 28),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _getProductName(),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.inventory_outlined,
-                            size: 16,
-                            color: widget.isTakeOver
-                                ? Colors.orange
-                                : Colors.green,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            widget.isTakeOver
-                                ? 'Sedang dipinjam: $_totalBorrowed unit (${_activeLoans.length} peminjam)'
-                                : 'Stok Tersedia: ${_getProductQuantity()}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: widget.isTakeOver
-                                  ? Colors.orange
-                                  : Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                Text(
+                  _getProductName(),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
                   ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.inventory_outlined,
+                      size: 16,
+                      color: widget.isTakeOver ? Colors.orange[700] : Colors.green[700],
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      widget.isTakeOver
+                          ? 'Sedang dipinjam: $_totalBorrowed unit'
+                          : 'Stok tersedia: ${_getProductQuantity()}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: widget.isTakeOver ? Colors.orange[700] : Colors.green[700],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildTakeOverWarningCard() {
-    return Card(
-      elevation: 2,
-      color: Colors.orange[50],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded,
-                color: Colors.orange[700], size: 32),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Mode Take Over',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange[900],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Stok tersedia habis. Total $_totalBorrowed unit sedang dipinjam oleh ${_activeLoans.length} pengguna. Masukkan PIN salah satu peminjam untuk mengambil alih stok mereka.',
-                    style: TextStyle(fontSize: 13, color: Colors.orange[800]),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '💡 Tips: Stok yang Anda ambil akan otomatis dikurangi dari peminjaman user tersebut.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.blue[900],
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-              ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.orange[50],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.orange[300]!),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.warning_amber_rounded, color: Colors.orange[700], size: 36),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Mode Take Over',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF92400E)),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Stok habis. Total $_totalBorrowed unit sedang dipinjam oleh ${_activeLoans.length} pengguna.',
+                  style: const TextStyle(color: Color(0xFF92400E)),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Masukkan PIN salah satu peminjam untuk mengambil alih stok mereka.',
+                  style: TextStyle(fontSize: 13, color: Colors.orange),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildPinSection(Color primaryColor) {
+  Widget _buildPinSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(Icons.vpn_key, color: primaryColor, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              'PIN Pengembalian Anda',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
+        const Text(
+          'PIN Pengembalian Anda',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: Colors.red[50],
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.red[300]!, width: 2),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: primaryBlue.withOpacity(0.4), width: 2),
+            boxShadow: [
+              BoxShadow(color: primaryBlue.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4)),
+            ],
           ),
           child: TextFormField(
             controller: _pinController,
             readOnly: true,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: Colors.red,
-              letterSpacing: 8,
-            ),
             textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 12,
+              color: primaryBlue,
+            ),
             decoration: InputDecoration(
-              hintText: '0000',
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 20),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.refresh, color: Colors.red),
-                onPressed: () {
-                  setState(() {
-                    _pinController.text = _generateRandomPin();
-                  });
-                },
+                icon: Icon(Icons.refresh_rounded, color: accentBlue, size: 28),
+                onPressed: () => setState(() => _pinController.text = _generateRandomPin()),
                 tooltip: 'Generate PIN Baru',
               ),
             ),
             validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'PIN wajib ada';
-              }
-              if (value.length != 4) {
-                return 'PIN harus 4 digit';
-              }
+              if (value == null || value.isEmpty || value.length != 4) return 'PIN harus 4 digit';
               return null;
             },
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.amber[50],
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.amber[300]!),
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline, color: Colors.amber[900], size: 20),
-              const SizedBox(width: 8),
-              Expanded(
+              Icon(Icons.info_outline, color: Colors.amber[800]),
+              const SizedBox(width: 10),
+              const Expanded(
                 child: Text(
-                  '⚠️ CATAT PIN INI! PIN digunakan untuk mengembalikan barang.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.amber[900],
-                    fontWeight: FontWeight.w600,
-                  ),
+                  'CATAT PIN INI! PIN digunakan untuk mengembalikan barang.',
+                  style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF92400E)),
                 ),
               ),
             ],
@@ -619,67 +594,40 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
     );
   }
 
-  Widget _buildBorrowPinSection(Color primaryColor) {
+  Widget _buildBorrowPinSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(Icons.person_outline, color: primaryColor, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              'PIN Peminjam (Wajib)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
+        const Text(
+          'PIN Peminjam (Wajib untuk Take Over)',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.red[300]!, width: 2),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.red[400]!, width: 2),
+            boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.15), blurRadius: 10)],
           ),
           child: TextFormField(
             controller: _borrowPinController,
             keyboardType: TextInputType.number,
             maxLength: 4,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              letterSpacing: 4,
-            ),
             textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 8),
             decoration: const InputDecoration(
-              hintText: 'Masukkan PIN peminjam',
+              hintText: '0000',
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
               counterText: '',
-              prefixIcon: Icon(Icons.lock_outline),
+              contentPadding: EdgeInsets.symmetric(vertical: 20),
             ),
             validator: (value) {
-              if (widget.isTakeOver) {
-                if (value == null || value.isEmpty) {
-                  return 'PIN peminjam wajib diisi untuk take over';
-                }
-                if (value.length != 4) {
-                  return 'PIN harus 4 digit';
-                }
+              if (widget.isTakeOver && (value == null || value.length != 4)) {
+                return 'PIN peminjam wajib 4 digit';
               }
               return null;
             },
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Masukkan PIN dari salah satu peminjam aktif. Sistem akan otomatis mengurangi qty dari peminjaman mereka.',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.red[700],
-            fontStyle: FontStyle.italic,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -692,23 +640,24 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
       children: [
         const Text(
           'Lokasi Peminjaman',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+            ],
           ),
           child: DropdownButtonFormField<int>(
             value: _selectedLocationId,
-            decoration: const InputDecoration(
+            dropdownColor: Colors.white,
+            decoration: InputDecoration(
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              prefixIcon: Icon(Icons.location_on_outlined),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              prefixIcon: Icon(Icons.location_on_outlined, color: primaryBlue),
             ),
             hint: const Text('Pilih lokasi'),
             items: _locations.map<DropdownMenuItem<int>>((location) {
@@ -717,17 +666,8 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
                 child: Text(location['location_name'] ?? 'Unknown'),
               );
             }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedLocationId = value;
-              });
-            },
-            validator: (value) {
-              if (value == null) {
-                return 'Lokasi wajib dipilih';
-              }
-              return null;
-            },
+            onChanged: (value) => setState(() => _selectedLocationId = value),
+            validator: (value) => value == null ? 'Wajib pilih lokasi' : null,
           ),
         ),
       ],
@@ -735,97 +675,51 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
   }
 
   Widget _buildQuantitySelector() {
-    final maxQty = _getMaxQuantity();
-    final isAtMax = _isIncrementDisabled();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Text(
-              'Jumlah',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              widget.isTakeOver
-                  ? '(Maks: $_totalBorrowed total dipinjam)'
-                  : '(Maks: $maxQty)',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
+        const Text(
+          'Jumlah Barang',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+            ],
           ),
           child: Row(
             children: [
               IconButton(
                 icon: const Icon(Icons.remove_circle_outline),
-                onPressed: _quantity > 1
-                    ? () {
-                        setState(() {
-                          _quantity--;
-                        });
-                      }
-                    : null,
-                color: _quantity > 1 ? Colors.red : Colors.grey,
+                onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
+                color: _quantity > 1 ? Colors.red[600] : Colors.grey,
               ),
               Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      '$_quantity',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (isAtMax)
-                      Text(
-                        'Maksimum',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.orange[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                  ],
+                child: Center(
+                  child: Text(
+                    '$_quantity',
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               IconButton(
                 icon: const Icon(Icons.add_circle_outline),
-                onPressed: isAtMax
-                    ? null
-                    : () {
-                        setState(() {
-                          _quantity++;
-                        });
-                      },
-                color: isAtMax ? Colors.grey : Colors.green,
+                onPressed: !_isIncrementDisabled() ? () => setState(() => _quantity++) : null,
+                color: !_isIncrementDisabled() ? Colors.green[600]! : Colors.grey,
               ),
             ],
           ),
         ),
-        if (widget.isTakeOver)
+        if (_isIncrementDisabled())
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
-              '⚠️ Pilih qty yang ingin diambil alih. Qty peminjam akan dikurangi otomatis.',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.blue[700],
-                fontStyle: FontStyle.italic,
-              ),
+              'Maksimum stok tersedia',
+              style: TextStyle(color: Colors.orange[700], fontWeight: FontWeight.w600),
             ),
           ),
       ],
@@ -838,103 +732,52 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
       children: [
         const Text(
           'Tanggal Peminjaman',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(
-              child: InkWell(
-                onTap: () => _presentDatePicker(true),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calendar_today, size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Mulai',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _selectedStartDate != null
-                                  ? '${_selectedStartDate!.day}/${_selectedStartDate!.month}/${_selectedStartDate!.year}'
-                                  : 'Pilih tanggal',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: _selectedStartDate != null
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            Expanded(child: _dateTile('Mulai', _selectedStartDate, () => _presentDatePicker(true))),
             const SizedBox(width: 12),
-            Expanded(
-              child: InkWell(
-                onTap: () => _presentDatePicker(false),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calendar_today, size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Selesai',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _selectedEndDate != null
-                                  ? '${_selectedEndDate!.day}/${_selectedEndDate!.month}/${_selectedEndDate!.year}'
-                                  : 'Pilih tanggal',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: _selectedEndDate != null
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            Expanded(child: _dateTile('Selesai', _selectedEndDate, () => _presentDatePicker(false))),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _dateTile(String label, DateTime? date, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey[300]!),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+            const SizedBox(height: 6),
+            Text(
+              date != null
+                  ? '${date.day}/${date.month}/${date.year}'
+                  : 'Pilih tanggal',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: date != null ? FontWeight.bold : FontWeight.normal,
+                color: date != null ? const Color(0xFF1F2937) : Colors.grey[500],
               ),
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 
@@ -944,25 +787,24 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
       children: [
         const Text(
           'Catatan (Opsional)',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+            ],
           ),
           child: TextFormField(
             controller: _noteController,
-            maxLines: 3,
+            maxLines: 4,
             decoration: const InputDecoration(
               hintText: 'Contoh: Untuk keperluan ujian praktik',
               border: InputBorder.none,
-              contentPadding: EdgeInsets.all(16),
-              prefixIcon: Padding(
-                padding: EdgeInsets.only(top: 12),
-                child: Icon(Icons.edit_note),
-              ),
+              contentPadding: EdgeInsets.all(20),
             ),
           ),
         ),
@@ -970,47 +812,32 @@ class _LoanFormScreenState extends State<LoanFormScreen> {
     );
   }
 
-  Widget _buildSubmitButton(Color primaryColor) {
+  Widget _buildSubmitButton() {
     return SizedBox(
-      height: 56,
       width: double.infinity,
+      height: 56,
       child: ElevatedButton(
         onPressed: _isLoading ? null : _submitLoan,
         style: ElevatedButton.styleFrom(
-          backgroundColor: widget.isTakeOver ? Colors.orange : primaryColor,
+          backgroundColor: widget.isTakeOver ? Colors.orange[600] : primaryBlue,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 4,
         ),
         child: _isLoading
             ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    widget.isTakeOver
-                        ? Icons.swap_horiz
-                        : Icons.check_circle_outline,
-                    size: 24,
-                  ),
+                  Icon(widget.isTakeOver ? Icons.swap_horiz_rounded : Icons.check_circle_outline_rounded),
                   const SizedBox(width: 12),
                   Text(
-                    widget.isTakeOver
-                        ? 'Ambil Alih Stok'
-                        : 'Konfirmasi Peminjaman',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    widget.isTakeOver ? 'Ambil Alih Stok' : 'Konfirmasi Peminjaman',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),

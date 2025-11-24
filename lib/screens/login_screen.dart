@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../service/api_service.dart'; // Import ApiService
+import '../service/api_service.dart';
 import 'register_screen.dart';
 import 'main_navigation.dart';
 
@@ -17,10 +17,10 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  // TEMA BIRU TUA, HITAM, PUTIH
+  final Color primaryBlue = const Color(0xFF1565C0);
+  final Color darkBlue = const Color(0xFF0D47A1);
+  final Color accentBlue = const Color(0xFF42A5F5);
 
   @override
   void dispose() {
@@ -36,7 +36,6 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        // LANGSUNG PAKE ApiService.login
         final response = await ApiService.login(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
@@ -49,7 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
         });
 
         if (response['success'] == true) {
-          // ✅ SIMPAN TOKEN KE ApiService
           if (response['token'] != null) {
             ApiService.token = response['token'];
             print('✅ Token tersimpan: ${response['token']}');
@@ -93,33 +91,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              primaryColor.withOpacity(0.1),
-              primaryColor.withOpacity(0.05),
-              Colors.transparent,
-            ],
-          ),
-        ),
+        color: Colors.white,
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 children: [
-                  // Header Section dengan Animasi
-                  _buildHeaderSection(primaryColor),
+                  _buildHeaderSection(),
                   const SizedBox(height: 48),
-
-                  // Login Card
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(32),
@@ -139,7 +123,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Title
                           Text(
                             'Masuk ke Akun',
                             style: TextStyle(
@@ -157,16 +140,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 32),
-
-                          // Email Field
                           _buildEmailField(isDark),
                           const SizedBox(height: 20),
-
-                          // Password Field
                           _buildPasswordField(isDark),
                           const SizedBox(height: 16),
-
-                          // Forgot Password
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
@@ -175,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   SnackBar(
                                     content: const Text(
                                         'Fitur lupa password sedang dikembangkan'),
-                                    backgroundColor: primaryColor,
+                                    backgroundColor: primaryBlue,
                                     behavior: SnackBarBehavior.floating,
                                   ),
                                 );
@@ -183,24 +160,18 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Text(
                                 'Lupa Password?',
                                 style: TextStyle(
-                                  color: primaryColor,
+                                  color: primaryBlue,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                           ),
                           const SizedBox(height: 24),
-
-                          // Login Button
-                          _buildLoginButton(primaryColor),
+                          _buildLoginButton(),
                           const SizedBox(height: 24),
-
-                          // Divider
                           _buildDivider(isDark),
                           const SizedBox(height: 24),
-
-                          // Register Section
-                          _buildRegisterSection(primaryColor),
+                          _buildRegisterSection(),
                         ],
                       ),
                     ),
@@ -214,37 +185,47 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildHeaderSection(Color primaryColor) {
+  Widget _buildHeaderSection() {
     return Column(
       children: [
-        // Animated Icon
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          width: 100,
-          height: 100,
+        // Logo dengan background HITAM
+        Container(
+          width: 120,
+          height: 120,
           decoration: BoxDecoration(
-            color: primaryColor.withOpacity(0.1),
+            color: Colors.black, // 👈 BACKGROUND HITAM
             shape: BoxShape.circle,
+            border: Border.all(
+              color: primaryBlue.withOpacity(0.3),
+              width: 3,
+            ),
           ),
-          child: Icon(
-            Icons.inventory_2_rounded,
-            size: 50,
-            color: primaryColor,
+          child: ClipOval(
+            child: Image.asset(
+              'assets/images/logo.png',
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                // Fallback: Icon putih di background hitam
+                return Icon(
+                  Icons.inventory_2_rounded,
+                  size: 60,
+                  color: Colors.white, // Icon putih
+                );
+              },
+            ),
           ),
         ),
         const SizedBox(height: 20),
-        // Title
         Text(
           'Sistem Peminjaman',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: primaryColor,
+            color: primaryBlue,
             letterSpacing: -0.5,
           ),
         ),
         const SizedBox(height: 8),
-        // Subtitle
         Text(
           'Kelola peminjaman barang dengan mudah',
           style: TextStyle(
@@ -285,7 +266,7 @@ class _LoginScreenState extends State<LoginScreen> {
               hintStyle: TextStyle(color: Colors.grey[500]),
               prefixIcon: Icon(
                 Icons.email_rounded,
-                color: Colors.grey[500],
+                color: primaryBlue,
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
@@ -337,7 +318,7 @@ class _LoginScreenState extends State<LoginScreen> {
               hintStyle: TextStyle(color: Colors.grey[500]),
               prefixIcon: Icon(
                 Icons.lock_rounded,
-                color: Colors.grey[500],
+                color: primaryBlue,
               ),
               suffixIcon: IconButton(
                 icon: Icon(
@@ -373,20 +354,20 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginButton(Color primaryColor) {
+  Widget _buildLoginButton() {
     return SizedBox(
       height: 56,
       width: double.infinity,
       child: ElevatedButton(
         onPressed: _isLoading ? null : _login,
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
+          backgroundColor: primaryBlue,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: 2,
-          shadowColor: primaryColor.withOpacity(0.3),
+          shadowColor: primaryBlue.withOpacity(0.3),
         ),
         child: _isLoading
             ? const SizedBox(
@@ -444,7 +425,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildRegisterSection(Color primaryColor) {
+  Widget _buildRegisterSection() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -468,13 +449,13 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
+                color: primaryBlue.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 'Daftar Sekarang',
                 style: TextStyle(
-                  color: primaryColor,
+                  color: primaryBlue,
                   fontWeight: FontWeight.bold,
                 ),
               ),

@@ -22,6 +22,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
+  // TEMA BIRU TUA, HITAM, PUTIH
+  final Color primaryBlue = const Color(0xFF1565C0); // Blue 800 (Biru Tua)
+  final Color darkBlue = const Color(0xFF0D47A1); // Blue 900 (Biru Lebih Gelap)
+  final Color accentBlue = const Color(0xFF42A5F5); // Blue 400 (Biru Terang)
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -84,31 +89,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daftar Akun'),
-        backgroundColor: Colors.transparent,
+        title: const Text('Daftar Akun', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              primaryColor.withOpacity(0.1),
-              primaryColor.withOpacity(0.05),
-              Colors.transparent,
-            ],
-          ),
-        ),
+        color: Colors.white,
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -116,7 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 children: [
                   // Header Section
-                  _buildHeaderSection(primaryColor),
+                  _buildHeaderSection(),
                   const SizedBox(height: 48),
 
                   // Register Card
@@ -175,11 +169,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 32),
 
                           // Register Button
-                          _buildRegisterButton(primaryColor),
+                          _buildRegisterButton(),
                           const SizedBox(height: 24),
 
                           // Login Section
-                          _buildLoginSection(primaryColor),
+                          _buildLoginSection(),
                         ],
                       ),
                     ),
@@ -193,21 +187,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildHeaderSection(Color primaryColor) {
+  Widget _buildHeaderSection() {
     return Column(
       children: [
-        // Icon
+        // Icon dengan background hitam dan border biru
         Container(
-          width: 80,
-          height: 80,
+          width: 100,
+          height: 100,
           decoration: BoxDecoration(
-            color: primaryColor.withOpacity(0.1),
+            color: Colors.black,
             shape: BoxShape.circle,
+            border: Border.all(
+              color: primaryBlue,
+              width: 3,
+            ),
           ),
           child: Icon(
             Icons.person_add_rounded,
-            size: 40,
-            color: primaryColor,
+            size: 50,
+            color: accentBlue,
           ),
         ),
         const SizedBox(height: 20),
@@ -217,7 +215,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: primaryColor,
+            color: primaryBlue,
           ),
         ),
         const SizedBox(height: 8),
@@ -261,7 +259,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               hintStyle: TextStyle(color: Colors.grey[500]),
               prefixIcon: Icon(
                 Icons.person_rounded,
-                color: Colors.grey[500],
+                color: primaryBlue,
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
@@ -313,7 +311,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               hintStyle: TextStyle(color: Colors.grey[500]),
               prefixIcon: Icon(
                 Icons.email_rounded,
-                color: Colors.grey[500],
+                color: primaryBlue,
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
@@ -365,7 +363,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               hintStyle: TextStyle(color: Colors.grey[500]),
               prefixIcon: Icon(
                 Icons.lock_rounded,
-                color: Colors.grey[500],
+                color: primaryBlue,
               ),
               suffixIcon: IconButton(
                 icon: Icon(
@@ -430,7 +428,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               hintStyle: TextStyle(color: Colors.grey[500]),
               prefixIcon: Icon(
                 Icons.lock_outline_rounded,
-                color: Colors.grey[500],
+                color: primaryBlue,
               ),
               suffixIcon: IconButton(
                 icon: Icon(
@@ -466,20 +464,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildRegisterButton(Color primaryColor) {
+  Widget _buildRegisterButton() {
     return SizedBox(
       height: 56,
       width: double.infinity,
       child: ElevatedButton(
         onPressed: _isLoading ? null : _register,
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
+          backgroundColor: primaryBlue,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: 2,
-          shadowColor: primaryColor.withOpacity(0.3),
+          shadowColor: primaryBlue.withOpacity(0.3),
         ),
         child: _isLoading
             ? const SizedBox(
@@ -508,7 +506,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildLoginSection(Color primaryColor) {
+  Widget _buildLoginSection() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -530,13 +528,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
+                color: primaryBlue.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 'Masuk Sekarang',
                 style: TextStyle(
-                  color: primaryColor,
+                  color: primaryBlue,
                   fontWeight: FontWeight.bold,
                 ),
               ),

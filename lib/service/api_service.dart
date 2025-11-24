@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class ApiService {
   // UBAH INI SESUAI BACKEND ANDA
   // Jika backend di localhost:8888 gunakan ini
-  static String baseUrl = "http://192.168.0.101:8888/api";
+  static String baseUrl = "http://172.22.128.1:8888/api";
 
   static String? _token;
 

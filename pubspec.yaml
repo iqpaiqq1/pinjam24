@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.1.0
-  intl: ^0.18.1  # TAMBAHKAN INI
+  intl: ^0.18.1
   # GAUSAH shared_preferences
 
 dev_dependencies:
@@ -22,3 +22,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  
+  assets:
+    - assets/images/
